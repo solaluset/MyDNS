@@ -1,0 +1,86 @@
+#!/system/bin/sh
+
+if [ "$ASH_STANDALONE" = "" ]; then
+  ASH_STANDALONE=1 /data/adb/magisk/busybox ash "$0" "$1"
+  exit
+fi
+
+MODDIR=MODDIR_PLACEHOLDER
+. $MODDIR/utils.sh
+
+start() {
+  sh $MODDIR/service.sh </dev/null &>/dev/null &
+}
+
+stop() {
+  sh $RESTORE_IPTABLES
+  kill $(cat $PIDFILE)
+  rm -f $PIDFILE
+}
+
+check_running() {
+  if [ -f $PIDFILE ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+case "$1" in
+  "start")
+    if check_running; then
+      echo "The service is already running."
+    else
+      start
+    fi
+    ;;
+  "stop")
+    if check_running; then
+      stop
+    else
+      echo "The service is not running."
+    fi
+    ;;
+  "restart")
+    if check_running; then
+      stop && start
+    else
+      echo "The service is not running."
+    fi
+    ;;
+  "config")
+    if [ "$EDITOR" = "" ]; then
+      EDITOR=nano
+    fi
+    temp_dir=$(mktemp -d)
+    temp_conf="$temp_dir/$(basename $CONFIG)"
+    cp $CONFIG "$temp_conf"
+    if [ "$(command -v "$EDITOR")" = "" ]; then
+      echo "Editor '$EDITOR' not found."
+      echo "Point to your text editor via EDITOR variable."
+    else
+      "$EDITOR" "$temp_conf"
+      load_config "$temp_conf"
+      if check_config; then
+        cp "$temp_conf" $CONFIG
+        write_resolv_conf
+        echo "Config was updated."
+      else
+        echo "Config was not updated."
+      fi
+    fi
+    rm -r "$temp_dir"
+    ;;
+  *)
+    echo -n "Status: "
+    if check_running; then
+      echo "running"
+      echo "Resources consumed:"
+      top -b -n 2 -d 0.2 | grep -E "^ *$(cat $PIDFILE) " | tail -1 \
+        | awk '{"nproc" | getline n; print "CPU " $8 * n "%\nRAM " $6 "%"}'
+    else
+      echo "stopped"
+    fi
+    echo "Available commands: start, restart, stop, config"
+    ;;
+esac
