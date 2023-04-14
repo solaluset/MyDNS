@@ -1,6 +1,6 @@
 id=MyDNS
 name=MyDNS
-version=v0.1
-versionCode=1
+version=v0.1.1
+versionCode=11
 author=Krutyi 4el
 description=Set up your local DNS server
