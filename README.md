@@ -16,7 +16,7 @@ This module allows you to:
 2. Install [Termux](https://f-droid.org/packages/com.termux/)
 3. Open Termux and install `dnsmasq`:
 `pkg install root-repo && pkg install dnsmasq`
-4. Download this module from releases tab (source code zip)
+4. Download this module from releases tab
 5. Install it via Magisk (make sure there's no warnings)
 6. Reboot
 
