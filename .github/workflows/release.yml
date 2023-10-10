@@ -23,7 +23,7 @@ jobs:
         {
           "version": "$(sed -n "s|^version=||p" module.prop)",
           "versionCode": $(sed -n "s|^versionCode=||p" module.prop),
-          "zipUrl": "$RELEASES_URL/latest/download/MyDNS-${{ github.ref }}.zip",
+          "zipUrl": "$RELEASES_URL/latest/download/MyDNS-$GITHUB_REF_NAME.zip",
           "changelog": "$RELEASES_URL"
         }
         EOF
