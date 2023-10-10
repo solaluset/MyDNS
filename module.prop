@@ -1,6 +1,7 @@
 id=MyDNS
 name=MyDNS
-version=v0.1.1
-versionCode=11
+version=v0.1.2
+versionCode=12
 author=Krutyi 4el
 description=Set up your local DNS server
+updateJson=https://github.com/Krutyi-4el/MyDNS/releases/latest/download/update.json
