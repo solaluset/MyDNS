@@ -18,13 +18,13 @@ jobs:
       run: |
         git archive --format zip -o ./module.zip ${{ github.ref }}
 
-        RELEASES_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases
+        REPO_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
         cat <<EOF > update.json
         {
           "version": "$(sed -n "s|^version=||p" module.prop)",
           "versionCode": $(sed -n "s|^versionCode=||p" module.prop),
-          "zipUrl": "$RELEASES_URL/latest/download/MyDNS-$GITHUB_REF_NAME.zip",
-          "changelog": "$RELEASES_URL"
+          "zipUrl": "$REPO_URL/releases/latest/download/MyDNS-$GITHUB_REF_NAME.zip",
+          "changelog": "$REPO_URL/raw/$GITHUB_REF_NAME/CHANGELOG.md"
         }
         EOF
 
