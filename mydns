@@ -1,10 +1,5 @@
 #!/system/bin/sh
 
-if [ "$ASH_STANDALONE" = "" ]; then
-  ASH_STANDALONE=1 /data/adb/magisk/busybox ash "$0" "$1"
-  exit
-fi
-
 path=$(readlink -f "$0")
 MODDIR=${path%/*}
 . $MODDIR/utils.sh
