@@ -77,8 +77,22 @@ case "$1" in
     if check_running; then
       echo "running"
       echo "Resources consumed:"
-      top -b -n 2 -d 0.2 | grep -E "^ *$(cat $PIDFILE) " | tail -1 \
-        | awk '{"nproc" | getline n; print "CPU " $8 * n "%\nRAM " $6 "%"}'
+
+      pid=$(cat $PIDFILE)
+      ticks1=$(awk '{ print $14 + $15 }' /proc/$pid/stat)
+      sleep 0.2
+      ticks2=$(awk '{ print $14 + $15 }' /proc/$pid/stat)
+
+      TOTAL_MEM=$(awk '$1 == "MemTotal:" { print $2 }' /proc/meminfo)
+      used_mem=$(awk '$1 == "Pss:" { total += $2 }; END { print total }' /proc/$pid/smaps)
+
+      awk '
+        BEGIN {
+          "getconf CLK_TCK" | getline TICKS_PER_SEC
+          printf "CPU %4.0f%%\n", ('$ticks2' - '$ticks1') * 5 * 100 / TICKS_PER_SEC
+          printf "RAM %4.1f%%\n", '$used_mem' / '$TOTAL_MEM' * 100
+        }
+      '
     else
       echo "stopped"
     fi
