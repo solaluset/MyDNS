@@ -5,7 +5,8 @@ if [ "$ASH_STANDALONE" = "" ]; then
   exit
 fi
 
-MODDIR=MODDIR_PLACEHOLDER
+path=$(readlink -f "$0")
+MODDIR=${path%/*}
 . $MODDIR/utils.sh
 
 start() {

@@ -2,9 +2,13 @@
 MODDIR=${0%/*}
 . $MODDIR/utils.sh
 
-# point the script back to module directory
-# (in case mount point gets changed)
-sed -i "s|=.*MODDIR_PLACEHOLDER|=$MODDIR # MODDIR_PLACEHOLDER|" "$MODDIR/system/bin/mydns"
+# link back to module directory
+# (to not depend on mount point)
+real=$MODDIR/mydns
+linked=$MODDIR/system/bin/mydns
+if [ "$(readlink -f $linked)" != $real ]; then
+  ln -fs $real $linked
+fi
 
 # generate resolv.conf
 upstream_servers=$(load_cfg_val upstream_server)
