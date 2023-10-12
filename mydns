@@ -22,10 +22,13 @@ check_running() {
   fi
 }
 
+exit_code=0
+
 case "$1" in
   "start")
     if check_running; then
       echo "The service is already running."
+      exit_code=1
     else
       start
     fi
@@ -35,6 +38,7 @@ case "$1" in
       stop
     else
       echo "The service is not running."
+      exit_code=1
     fi
     ;;
   "restart")
@@ -42,6 +46,7 @@ case "$1" in
       stop && start
     else
       echo "The service is not running."
+      exit_code=1
     fi
     ;;
   "config")
@@ -54,6 +59,7 @@ case "$1" in
     if [ "$(command -v "$EDITOR")" = "" ]; then
       echo "Editor '$EDITOR' not found."
       echo "Point to your text editor via EDITOR variable."
+      exit_code=1
     else
       "$EDITOR" "$temp_conf"
       load_config "$temp_conf"
@@ -63,6 +69,7 @@ case "$1" in
         echo "Config was updated."
       else
         echo "Config was not updated."
+        exit_code=1
       fi
     fi
     rm -r "$temp_dir"
@@ -92,5 +99,10 @@ case "$1" in
       echo "stopped"
     fi
     echo "Available commands: start, restart, stop, config"
+    if [ "$1" != "" ]; then
+      exit_code=1
+    fi
     ;;
 esac
+
+exit $exit_code
