@@ -1,13 +1,13 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
-. $MODDIR/utils.sh
+. "$MODDIR/utils.sh"
 
 # link back to module directory
 # (to not depend on mount point)
 real=$MODDIR/mydns
 linked=$MODDIR/system/bin/mydns
-if [ "$(readlink -f $linked)" != $real ]; then
-  ln -fs $real $linked
+if [ "$(readlink -f $linked)" != "$real" ]; then
+  ln -fs "$real" "$linked"
 fi
 
 # generate resolv.conf

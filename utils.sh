@@ -8,9 +8,9 @@ CONFIG=$DATADIR/mydns.conf
 PIDFILE=$DATADIR/dnsmasq.pid
 RESTORE_IPTABLES=$DATADIR/restore_iptables
 
-mkdir -p $DATADIR
-if [ ! -f $CONFIG ]; then
-  cp $MODDIR/default.conf $CONFIG
+mkdir -p "$DATADIR"
+if [ ! -f "$CONFIG" ]; then
+  cp "$MODDIR/default.conf" "$CONFIG"
 fi
 
 if [ "$(command -v ui_print)" = "" ]; then
@@ -18,8 +18,8 @@ if [ "$(command -v ui_print)" = "" ]; then
 fi
 
 DNSMASQ=$DATADIR/dnsmasq
-if [ ! -x $DNSMASQ ]; then
-  cp /data/data/com.termux/files/usr/bin/dnsmasq $DATADIR
+if [ ! -x "$DNSMASQ" ]; then
+  cp /data/data/com.termux/files/usr/bin/dnsmasq "$DATADIR"
   if [ $? != 0 ]; then
     ui_print "WARNING: dnsmasq not found in Termux."
     ui_print "WARNING: Standard dnsmasq may cause abnormal CPU usage."
@@ -84,5 +84,5 @@ write_resolv_conf() {
 }
 
 run_dnsmasq() {
-  $DNSMASQ --pid-file=$PIDFILE --port $server_port -Q $output_port $dnsmasq_args $1
+  "$DNSMASQ" --pid-file="$PIDFILE" --port $server_port -Q $output_port $dnsmasq_args $1
 }

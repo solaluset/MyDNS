@@ -2,20 +2,20 @@
 
 path=$(readlink -f "$0")
 MODDIR=${path%/*}
-. $MODDIR/utils.sh
+. "$MODDIR/utils.sh"
 
 start() {
-  sh $MODDIR/service.sh </dev/null &>/dev/null &
+  sh "$MODDIR/service.sh" </dev/null &>/dev/null &
 }
 
 stop() {
-  sh $RESTORE_IPTABLES
-  kill $(cat $PIDFILE)
-  rm -f $PIDFILE
+  sh "$RESTORE_IPTABLES"
+  kill $(cat "$PIDFILE")
+  rm -f "$PIDFILE"
 }
 
 check_running() {
-  if [ -f $PIDFILE ]; then
+  if [ -f "$PIDFILE" ]; then
     return 0
   else
     return 1
@@ -55,7 +55,7 @@ case "$1" in
     fi
     temp_dir=$(mktemp -d)
     temp_conf="$temp_dir/$(basename $CONFIG)"
-    cp $CONFIG "$temp_conf"
+    cp "$CONFIG" "$temp_conf"
     if [ "$(command -v "$EDITOR")" = "" ]; then
       echo "Editor '$EDITOR' not found."
       echo "Point to your text editor via EDITOR variable."
@@ -64,7 +64,7 @@ case "$1" in
       "$EDITOR" "$temp_conf"
       load_config "$temp_conf"
       if check_config; then
-        cp "$temp_conf" $CONFIG
+        cp "$temp_conf" "$CONFIG"
         write_resolv_conf
         echo "Config was updated."
       else
@@ -80,7 +80,7 @@ case "$1" in
       echo "running"
       echo "Resources consumed:"
 
-      pid=$(cat $PIDFILE)
+      pid=$(cat "$PIDFILE")
       ticks1=$(awk '{ print $14 + $15 }' /proc/$pid/stat)
       sleep 0.2
       ticks2=$(awk '{ print $14 + $15 }' /proc/$pid/stat)

@@ -5,7 +5,7 @@
 # This will make sure your module will still work
 # if Magisk change its mount point in the future
 MODDIR=${0%/*}
-. $MODDIR/utils.sh
+. "$MODDIR/utils.sh"
 
 # This script will be executed in late_start service mode
 
