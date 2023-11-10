@@ -3,7 +3,15 @@ if [ "$MODPATH" != "" ]; then
 elif [ "$MODDIR" = "" ]; then
   MODDIR=${0%/*}
 fi
-DATADIR=/data/mydns
+ANDROID=1
+if [ $ANDROID = 1 ]; then
+  DATADIR=/data/mydns
+  SYSDIR=$MODDIR/system
+else
+  DATADIR=$MODDIR
+  SYSDIR=""
+  PREFIX=
+fi
 CONFIG=$DATADIR/mydns.conf
 PIDFILE=$DATADIR/dnsmasq.pid
 RESTORE_IPTABLES=$DATADIR/restore_iptables
@@ -19,11 +27,15 @@ fi
 
 DNSMASQ=$DATADIR/dnsmasq
 if [ ! -x "$DNSMASQ" ]; then
-  cp /data/data/com.termux/files/usr/bin/dnsmasq "$DATADIR"
-  if [ $? != 0 ]; then
-    ui_print "WARNING: dnsmasq not found in Termux."
-    ui_print "WARNING: Standard dnsmasq may cause abnormal CPU usage."
-    ui_print "WARNING: Install dnsmasq in Termux and reflash the module."
+  if [ $ANDROID = 1 ]; then
+    cp /data/data/com.termux/files/usr/bin/dnsmasq "$DATADIR"
+    if [ $? != 0 ]; then
+      ui_print "WARNING: dnsmasq not found in Termux."
+      ui_print "WARNING: Standard dnsmasq may cause abnormal CPU usage."
+      ui_print "WARNING: Install dnsmasq in Termux and reflash the module."
+      DNSMASQ=dnsmasq
+    fi
+  else
     DNSMASQ=dnsmasq
   fi
 fi
@@ -76,10 +88,14 @@ check_config() {
 }
 
 write_resolv_conf() {
-  echo -n > "$MODDIR/system/etc/resolv.conf"
+  if [ "$upstream_servers" = "inherit" ]; then
+    return
+  fi
+  local resolv=$SYSDIR/etc/resolv.conf
+  echo -n > "$resolv"
   local server
   for server in $upstream_servers; do
-    echo "nameserver $server" >> "$MODDIR/system/etc/resolv.conf"
+    echo "nameserver $server" >> "$resolv"
   done
 }
 
