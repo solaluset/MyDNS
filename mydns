@@ -15,7 +15,7 @@ stop() {
 }
 
 check_running() {
-  if [ -f "$PIDFILE" ]; then
+  if [ -f "$PIDFILE" ] && [ -d "/proc/$(cat $PIDFILE)" ]; then
     return 0
   else
     return 1
