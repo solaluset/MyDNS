@@ -1,3 +1,6 @@
+### v0.2.0
+- Added `linux_install.sh` for non-Android systems
+
 ### v0.1.3
 - Fixed updating
 - Fixed changelog in Magisk
