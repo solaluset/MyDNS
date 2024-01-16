@@ -1,0 +1,108 @@
+#!/system/bin/sh
+
+path=$(readlink -f "$0")
+MODDIR=${path%/*}
+. "$MODDIR/utils.sh"
+
+start() {
+  sh "$MODDIR/service.sh" </dev/null &>/dev/null &
+}
+
+stop() {
+  sh "$RESTORE_IPTABLES"
+  kill $(cat "$PIDFILE")
+  rm -f "$PIDFILE"
+}
+
+check_running() {
+  if [ -f "$PIDFILE" ] && [ -d "/proc/$(cat $PIDFILE)" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+exit_code=0
+
+case "$1" in
+  "start")
+    if check_running; then
+      echo "The service is already running."
+      exit_code=1
+    else
+      start
+    fi
+    ;;
+  "stop")
+    if check_running; then
+      stop
+    else
+      echo "The service is not running."
+      exit_code=1
+    fi
+    ;;
+  "restart")
+    if check_running; then
+      stop && start
+    else
+      echo "The service is not running."
+      exit_code=1
+    fi
+    ;;
+  "config")
+    if [ "$EDITOR" = "" ]; then
+      EDITOR=nano
+    fi
+    temp_dir=$(mktemp -d)
+    temp_conf="$temp_dir/$(basename $CONFIG)"
+    cp "$CONFIG" "$temp_conf"
+    if [ "$(command -v "$EDITOR")" = "" ]; then
+      echo "Editor '$EDITOR' not found."
+      echo "Point to your text editor via EDITOR variable."
+      exit_code=1
+    else
+      "$EDITOR" "$temp_conf"
+      load_config "$temp_conf"
+      if check_config; then
+        cp "$temp_conf" "$CONFIG"
+        write_resolv_conf
+        echo "Config was updated."
+      else
+        echo "Config was not updated."
+        exit_code=1
+      fi
+    fi
+    rm -r "$temp_dir"
+    ;;
+  *)
+    echo -n "Status: "
+    if check_running; then
+      echo "running"
+      echo "Resources consumed:"
+
+      pid=$(cat "$PIDFILE")
+      ticks1=$(awk '{ print $14 + $15 }' /proc/$pid/stat)
+      sleep 0.2
+      ticks2=$(awk '{ print $14 + $15 }' /proc/$pid/stat)
+
+      TOTAL_MEM=$(awk '$1 == "MemTotal:" { print $2 }' /proc/meminfo)
+      used_mem=$(awk '$1 == "Pss:" { total += $2 }; END { print total }' /proc/$pid/smaps)
+
+      awk '
+        BEGIN {
+          "getconf CLK_TCK" | getline TICKS_PER_SEC
+          printf "CPU %4.0f%%\n", ('$ticks2' - '$ticks1') * 5 * 100 / TICKS_PER_SEC
+          printf "RAM %4.1f%%\n", '$used_mem' / '$TOTAL_MEM' * 100
+        }
+      '
+    else
+      echo "stopped"
+    fi
+    echo "Available commands: start, restart, stop, config"
+    if [ "$1" != "" ]; then
+      exit_code=1
+    fi
+    ;;
+esac
+
+exit $exit_code

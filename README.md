@@ -25,3 +25,7 @@ This module allows you to:
 - Run `mydns config` and update the file to your needs.
 - Run `mydns restart` for changes to take effect.
 - Run `mydns` to check resource usage. If CPU usage is high, wait a minute and check again. If it's still high, please open an issue in this repository.
+
+## Installation (non-Android)
+You can use `linux_install.sh` to install MyDNS for any Linux system.
+Keep in mind that you will need to add `mydns start` to autostart manually.

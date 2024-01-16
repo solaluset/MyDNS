@@ -3,14 +3,22 @@ if [ "$MODPATH" != "" ]; then
 elif [ "$MODDIR" = "" ]; then
   MODDIR=${0%/*}
 fi
-DATADIR=/data/mydns
+ANDROID=1
+if [ $ANDROID = 1 ]; then
+  DATADIR=/data/mydns
+  SYSDIR=$MODDIR/system
+else
+  DATADIR=$MODDIR
+  SYSDIR=""
+  PREFIX=
+fi
 CONFIG=$DATADIR/mydns.conf
 PIDFILE=$DATADIR/dnsmasq.pid
 RESTORE_IPTABLES=$DATADIR/restore_iptables
 
-mkdir -p $DATADIR
-if [ ! -f $CONFIG ]; then
-  cp $MODDIR/default.conf $CONFIG
+mkdir -p "$DATADIR"
+if [ ! -f "$CONFIG" ]; then
+  cp "$MODDIR/default.conf" "$CONFIG"
 fi
 
 if [ "$(command -v ui_print)" = "" ]; then
@@ -18,15 +26,20 @@ if [ "$(command -v ui_print)" = "" ]; then
 fi
 
 DNSMASQ=$DATADIR/dnsmasq
-if [ ! -x $DNSMASQ ]; then
-  cp /data/data/com.termux/files/usr/bin/dnsmasq $DATADIR
-  if [ $? != 0 ]; then
-    ui_print "WARNING: dnsmasq not found in Termux."
-    ui_print "WARNING: Standard dnsmasq may cause abnormal CPU usage."
-    ui_print "WARNING: Install dnsmasq in Termux and reflash the module."
+if [ ! -x "$DNSMASQ" ]; then
+  if [ $ANDROID = 1 ]; then
+    cp /data/data/com.termux/files/usr/bin/dnsmasq "$DATADIR"
+    if [ $? != 0 ]; then
+      ui_print "WARNING: dnsmasq not found in Termux."
+      ui_print "WARNING: Standard dnsmasq may cause abnormal CPU usage."
+      ui_print "WARNING: Install dnsmasq in Termux and reflash the module."
+      DNSMASQ=dnsmasq
+    fi
+  else
     DNSMASQ=dnsmasq
   fi
 fi
+inherit_servers=0
 
 load_cfg_val() {
   if [ "$2" != "" ]; then
@@ -41,6 +54,10 @@ load_config() {
   server_port=$(load_cfg_val server_port "$1")
   output_port=$(load_cfg_val output_port "$1")
   upstream_servers=$(load_cfg_val upstream_server "$1")
+  if [ "$upstream_servers" = "inherit" ]; then
+    inherit_servers=1
+    upstream_servers=$(grep -Po '(?<=nameserver )[^$]+$' /etc/resolv.conf)
+  fi
   dnsmasq_args=$(load_cfg_val dnsmasq_args "$1")
 }
 
@@ -76,13 +93,17 @@ check_config() {
 }
 
 write_resolv_conf() {
-  echo -n > "$MODDIR/system/etc/resolv.conf"
+  if [ "$inherit_servers" = "1" ]; then
+    return
+  fi
+  local resolv=$SYSDIR/etc/resolv.conf
+  echo -n > "$resolv"
   local server
   for server in $upstream_servers; do
-    echo "nameserver $server" >> "$MODDIR/system/etc/resolv.conf"
+    echo "nameserver $server" >> "$resolv"
   done
 }
 
 run_dnsmasq() {
-  $DNSMASQ --pid-file=$PIDFILE --port $server_port -Q $output_port $dnsmasq_args $1
+  "$DNSMASQ" --pid-file="$PIDFILE" --port $server_port -Q $output_port $dnsmasq_args $1
 }
