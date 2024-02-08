@@ -1,3 +1,6 @@
+### v0.1.4
+- Updated author
+
 ### v0.1.3
 - Fixed updating
 - Fixed changelog in Magisk
