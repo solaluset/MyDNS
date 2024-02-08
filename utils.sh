@@ -39,6 +39,7 @@ if [ ! -x "$DNSMASQ" ]; then
     DNSMASQ=dnsmasq
   fi
 fi
+inherit_servers=0
 
 load_cfg_val() {
   if [ "$2" != "" ]; then
@@ -53,6 +54,10 @@ load_config() {
   server_port=$(load_cfg_val server_port "$1")
   output_port=$(load_cfg_val output_port "$1")
   upstream_servers=$(load_cfg_val upstream_server "$1")
+  if [ "$upstream_servers" = "inherit" ]; then
+    inherit_servers=1
+    upstream_servers=$(grep -Po '(?<=nameserver )[^$]+$' /etc/resolv.conf)
+  fi
   dnsmasq_args=$(load_cfg_val dnsmasq_args "$1")
 }
 
@@ -88,7 +93,7 @@ check_config() {
 }
 
 write_resolv_conf() {
-  if [ "$upstream_servers" = "inherit" ]; then
+  if [ "$inherit_servers" = "1" ]; then
     return
   fi
   local resolv=$SYSDIR/etc/resolv.conf

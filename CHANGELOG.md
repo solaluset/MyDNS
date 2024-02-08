@@ -1,5 +1,8 @@
-### v0.1.4
+### v0.2.1
 - Updated author
+
+### v0.2.0
+- Added `linux_install.sh` for non-Android systems
 
 ### v0.1.3
 - Fixed updating
