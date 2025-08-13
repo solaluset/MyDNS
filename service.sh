@@ -38,4 +38,7 @@ done
 add_iptables_redirect tcp 127.0.0.1 $server_port
 add_iptables_redirect udp 127.0.0.1 $server_port
 
-run_dnsmasq
+if ! run_dnsmasq; then
+  echo "Unable to start, aborting."
+  sh "$RESTORE_IPTABLES"
+fi
