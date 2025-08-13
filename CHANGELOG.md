@@ -1,3 +1,6 @@
+### v0.2.2
+- Restore iptables on failed start
+
 ### v0.2.1
 - Updated author
 

@@ -1,7 +1,7 @@
 id=MyDNS
 name=MyDNS
-version=v0.2.1
-versionCode=21
+version=v0.2.2
+versionCode=22
 author=Sóla Lusøt
 description=Set up your local DNS server
 updateJson=https://github.com/solaluset/MyDNS/releases/latest/download/update.json
